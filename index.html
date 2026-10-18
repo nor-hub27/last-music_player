@@ -832,6 +832,98 @@ function createSynthesizedAudio(type) {
   return URL.createObjectURL(blob);
 }
 
+// Robust built-in SVG cover art fallbacks that never fail or 404
+const DEFAULT_COVER_ART = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <radialGradient id="vbg" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#181824"/>
+      <stop offset="65%" stop-color="#0e0e15"/>
+      <stop offset="100%" stop-color="#07070b"/>
+    </radialGradient>
+    <linearGradient id="neon" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#818cf8"/>
+      <stop offset="100%" stop-color="#c084fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="500" height="500" fill="url(#vbg)"/>
+  <circle cx="250" cy="250" r="215" fill="none" stroke="#222230" stroke-width="2"/>
+  <circle cx="250" cy="250" r="185" fill="none" stroke="#2a2a3c" stroke-width="1.5"/>
+  <circle cx="250" cy="250" r="155" fill="none" stroke="#1f1f2e" stroke-width="1.5"/>
+  <circle cx="250" cy="250" r="125" fill="none" stroke="#252538" stroke-width="1.5"/>
+  <circle cx="250" cy="250" r="95" fill="#14141f" stroke="url(#neon)" stroke-width="3"/>
+  <circle cx="250" cy="250" r="20" fill="#07070b" stroke="#7dd3fc" stroke-width="2"/>
+  <path d="M246 200v45.55c-2.36-1.36-5.08-2.2-8-2.2-8.84 0-16 7.16-16 16s7.16 16 16 16 16-7.16 16-16V216h16v-16h-24z" fill="url(#neon)"/>
+  <text x="250" y="380" text-anchor="middle" fill="#7dd3fc" font-family="system-ui,sans-serif" font-size="18" font-weight="700" letter-spacing="3">NOR PLAYER</text>
+</svg>`.trim());
+
+const DEMO_ART_1 = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="40%" stop-color="#1e1b4b"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <radialGradient id="star" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="500" height="500" fill="url(#g1)"/>
+  <circle cx="250" cy="200" r="180" fill="url(#star)"/>
+  <circle cx="250" cy="220" r="140" fill="none" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 8" opacity="0.6"/>
+  <circle cx="250" cy="220" r="90" fill="none" stroke="#818cf8" stroke-width="1.5" opacity="0.8"/>
+  <circle cx="250" cy="220" r="50" fill="#0f172a" stroke="#7dd3fc" stroke-width="3"/>
+  <path d="M246 195v28c-1.5-.9-3.2-1.4-5-1.4-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10v-20h10v-10h-15z" fill="#7dd3fc"/>
+  <text x="250" y="375" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="22" font-weight="700">STARLIGHT RESONANCE</text>
+  <text x="250" y="405" text-anchor="middle" fill="#7dd3fc" font-family="system-ui,sans-serif" font-size="14" letter-spacing="2">ASTRAL WAVE · ENGLISH</text>
+</svg>`.trim());
+
+const DEMO_ART_2 = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#31102f"/>
+      <stop offset="45%" stop-color="#701a75"/>
+      <stop offset="75%" stop-color="#c026d3"/>
+      <stop offset="100%" stop-color="#f43f5e"/>
+    </linearGradient>
+    <radialGradient id="sun" cx="50%" cy="45%" r="40%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#f43f5e" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#31102f" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="500" height="500" fill="url(#g2)"/>
+  <circle cx="250" cy="230" r="120" fill="url(#sun)"/>
+  <path d="M80 340 L190 240 L280 310 L370 210 L450 340 Z" fill="#180728" opacity="0.85"/>
+  <text x="250" y="385" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="22" font-weight="700">HIKARI NO UTA</text>
+  <text x="250" y="415" text-anchor="middle" fill="#fbcfe8" font-family="system-ui,sans-serif" font-size="14" letter-spacing="2">AOI SORA · JAPANESE</text>
+</svg>`.trim());
+
+const DEMO_ART_3 = 'data:image/svg+xml;utf8,' + encodeURIComponent(`
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="g3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b"/>
+      <stop offset="50%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <radialGradient id="glow3" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#064e3b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="500" height="500" fill="url(#g3)"/>
+  <circle cx="250" cy="210" r="130" fill="url(#glow3)"/>
+  <circle cx="250" cy="210" r="75" fill="#064e3b" stroke="#fef08a" stroke-width="2.5"/>
+  <path d="M246 185v28c-1.5-.9-3.2-1.4-5-1.4-5.5 0-10 4.5-10 10s4.5 10 10 10 10-4.5 10-10v-20h10v-10h-15z" fill="#fef08a"/>
+  <text x="250" y="380" text-anchor="middle" fill="#ffffff" font-family="system-ui,sans-serif" font-size="22" font-weight="700">LIWANAG SA DILIM</text>
+  <text x="250" y="410" text-anchor="middle" fill="#fde68a" font-family="system-ui,sans-serif" font-size="14" letter-spacing="2">MAYARI · FILIPINO OPM</text>
+</svg>`.trim());
+
 // Default preloaded tracks with synced lyrics
 const demoTracks = [
   {
@@ -840,7 +932,7 @@ const demoTracks = [
     title: 'Starlight Resonance',
     artist: 'Astral Wave',
     url: createSynthesizedAudio(0),
-    art: null,
+    art: DEMO_ART_1,
     lyrics: {
       sy: 1,
       t: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40],
@@ -861,49 +953,58 @@ const demoTracks = [
   },
   {
     id: 'demo-2',
-    name: 'Midnight Mirage.wav',
-    title: 'Midnight Mirage',
-    artist: 'Crystal Glow',
+    name: 'Hikari no Uta.wav',
+    title: 'Hikari no Uta (Song of Light)',
+    artist: 'Aoi Sora',
     url: createSynthesizedAudio(1),
-    art: null,
+    art: DEMO_ART_2,
+    englishLyrics: [
+      'Like stars shining brightly in the night sky',
+      'A gentle voice echoing in the quiet night',
+      'Illuminating the distant path ahead',
+      'Embracing the warm light of hope',
+      'A melody carried softly by the wind',
+      'Reaching deep into the heart',
+      'Wiping away the tears to walk forward',
+      'Tomorrow\'s open sky is waiting for us',
+      'Song of light, echo forever in our souls ♪'
+    ],
     lyrics: {
       sy: 1,
-      t: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36],
+      t: [0, 4, 8, 12, 16, 20, 24, 28, 32],
       l: [
-        'Shadows dancing in the glass',
-        'Moments that were meant to last',
-        'Spectral reflections in the deep',
-        'Awakening the dreams we keep',
-        'Pulse of the night, serene and clear',
-        'No hesitation and no fear',
-        'Rays of gold and violet hue',
-        'Leading my heartbeat back to you',
-        'Lost inside the midnight glow',
-        'Where gentle secret rivers flow ♪'
+        '夜空に輝く星のように (Like stars in the night sky)',
+        '静かな夜に響く声 (A gentle voice in the quiet night)',
+        '遥かな道を照らし出す (Illuminating the path ahead)',
+        '希望の光を抱きしめて (Embracing the light of hope)',
+        '風が運ぶメロディー (Melody carried by the wind)',
+        '心の奥に届くまで (Reaching the depths of the heart)',
+        '涙を拭いて歩き出そう (Wiping away tears, walking on)',
+        '明日の空が待っている (Tomorrow\'s sky awaits)',
+        '光の歌よ、響け永遠に (Song of light, echo forever ♪)'
       ]
     }
   },
   {
     id: 'demo-3',
-    name: 'Obsidian Echoes.wav',
-    title: 'Obsidian Echoes',
-    artist: 'Spectral Pulse',
+    name: 'Liwanag sa Dilim.wav',
+    title: 'Liwanag sa Dilim',
+    artist: 'Mayari',
     url: createSynthesizedAudio(2),
-    art: null,
+    art: DEMO_ART_3,
     lyrics: {
       sy: 1,
-      t: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36],
+      t: [0, 4, 8, 12, 16, 20, 24, 28, 32],
       l: [
-        'Deep within the velvet stone',
-        'A silent world we call our own',
-        'Vibrations rising from the ground',
-        'The warmest music to be found',
-        'Let the tempo guide the flight',
-        'Through the diamond-sparkled night',
-        'Every second holds a spark',
-        'Illuminating every dark',
-        'Obsidian echoes fade away',
-        'Until we meet another day ♪'
+        'Sa gitna ng dilim may pag-asa',
+        'Bawat tibok ng puso ay may sigla',
+        'Hawakan mo ang aking kamay',
+        'Sabay nating haharapin ang buhay',
+        'Hindi ka mag-iisa sa laban',
+        'Ang liwanag ay ating masisilayan',
+        'Pakinggan ang himig ng pag-ibig',
+        'Tanging ikaw ang aking daigdig',
+        'Liwanag sa dilim ay magniningning ♪'
       ]
     }
   }
@@ -957,8 +1058,12 @@ function playTrack(idx, recordHist = true) {
   $('track-subtitle').textContent = track.artist ? `${track.artist} · Track ${safeIdx + 1} of ${playlist.length}` : `Track ${safeIdx + 1} of ${playlist.length}`;
 
   const cover = $('cover-img');
-  cover.src = track.art || '/cover.jpg';
-  cover.onerror = () => { cover.src = '/cover.jpg'; };
+  // Always display track art or default SVG cover art, never blank
+  cover.src = track.art || DEFAULT_COVER_ART;
+  cover.onerror = () => {
+    cover.onerror = null;
+    cover.src = DEFAULT_COVER_ART;
+  };
   cover.classList.remove('cover-pop');
   void cover.offsetWidth;
   cover.classList.add('cover-pop');
@@ -966,6 +1071,12 @@ function playTrack(idx, recordHist = true) {
   audio.src = track.url;
   audio.load();
   audio.play().then(() => updatePlayIcon(true)).catch(() => updatePlayIcon(false));
+
+  // If track was previously translated, revert to original so original is always shown first
+  if (track.origLyrics && track.isTranslated) {
+    track.lyrics = { ...track.origLyrics, l: [...track.origLyrics.l] };
+    track.isTranslated = false;
+  }
 
   currentLyrics = track.lyrics || null;
   currentLyricIdx = -1;
@@ -1162,7 +1273,7 @@ function renderQueue() {
 
     item.innerHTML = `
       <div class="track-thumb">
-        <img src="${t.art || '/cover.jpg'}" alt="" onerror="this.src='/cover.jpg'">
+        <img src="${t.art || DEFAULT_COVER_ART}" alt="" onerror="this.onerror=null; this.src=DEFAULT_COVER_ART;">
       </div>
       <div class="track-info">
         <div class="track-name ${isSelected ? 'playing' : ''}">${t.title || t.name.replace(/\.[^/.]+$/, '')}</div>
@@ -1178,6 +1289,47 @@ function renderQueue() {
     `;
     list.appendChild(item);
   });
+}
+
+// Comprehensive binary image scanner for raw embedded album images
+function scanEmbeddedImage(bytes) {
+  if (!bytes || bytes.length < 512) return null;
+  // 1. JPEG: 0xFF, 0xD8, 0xFF followed by SOF/JFIF/Exif marker
+  for (let i = 0; i < bytes.length - 128; i++) {
+    if (bytes[i] === 0xFF && bytes[i+1] === 0xD8 && bytes[i+2] === 0xFF &&
+       (bytes[i+3] === 0xE0 || bytes[i+3] === 0xE1 || bytes[i+3] === 0xDB || bytes[i+3] === 0xEE || bytes[i+3] === 0xC0)) {
+      let end = -1;
+      for (let j = i + 128; j < bytes.length - 1; j++) {
+        if (bytes[j] === 0xFF && bytes[j+1] === 0xD9) {
+          end = j + 2;
+          break;
+        }
+      }
+      const len = end !== -1 ? end - i : (bytes.length - i);
+      if (len >= 512) {
+        return { bytes: bytes.slice(i, i + len), mime: 'image/jpeg' };
+      }
+    }
+  }
+
+  // 2. PNG: 8-byte PNG header
+  for (let i = 0; i < bytes.length - 128; i++) {
+    if (bytes[i] === 0x89 && bytes[i+1] === 0x50 && bytes[i+2] === 0x4E && bytes[i+3] === 0x47 &&
+        bytes[i+4] === 0x0D && bytes[i+5] === 0x0A && bytes[i+6] === 0x1A && bytes[i+7] === 0x0A) {
+      let end = -1;
+      for (let j = i + 8; j < bytes.length - 4; j++) {
+        if (bytes[j] === 0x49 && bytes[j+1] === 0x45 && bytes[j+2] === 0x4E && bytes[j+3] === 0x44) {
+          end = j + 8;
+          break;
+        }
+      }
+      const len = end !== -1 ? end - i : (bytes.length - i);
+      if (len >= 512) {
+        return { bytes: bytes.slice(i, i + len), mime: 'image/png' };
+      }
+    }
+  }
+  return null;
 }
 
 // Fast and accurate binary signature scanner for embedded album images
@@ -1379,6 +1531,14 @@ async function extractAudioMetadata(file) {
         }
       }
     }
+
+    // 4. Raw binary scanner fallback: scan bytes for embedded JPEG or PNG with accurate end
+    if (!art) {
+      const foundImg = scanEmbeddedImage(bytes);
+      if (foundImg) {
+        art = URL.createObjectURL(new Blob([foundImg.bytes], { type: foundImg.mime }));
+      }
+    }
   } catch(e) {}
 
   return { art, lyrics, title, artist };
@@ -1517,14 +1677,26 @@ async function handleCapacitorFiles(capFiles) {
         const playUrl = window.Capacitor.convertFileSrc(cached.path);
         const clean = item.name.replace(/\.[^/.]+$/, '');
         const parts = clean.split(' - ');
+        let capArt = null;
+        let capLyrics = null;
+        try {
+          const resp = await fetch(playUrl);
+          if (resp.ok) {
+            const b = await resp.blob();
+            const meta = await extractAudioMetadata(b);
+            capArt = meta.art;
+            capLyrics = meta.lyrics;
+          }
+        } catch(e) {}
+
         playlist.push({
           id: `cap-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           name: item.name,
           title: parts.length > 1 ? parts[1].trim() : clean,
           artist: parts.length > 1 ? parts[0].trim() : '',
           url: playUrl,
-          art: null,
-          lyrics: null
+          art: capArt || DEFAULT_COVER_ART,
+          lyrics: capLyrics || null
         });
         addedCount++;
         renderQueue();
@@ -1720,7 +1892,7 @@ function isFilipinoOrTagalog(text, artist, title) {
     'sb19', 'bini', 'alamat', 'maki', 'moira', 'lola amour', 'ben&ben', 'ben and ben',
     'tj monterde', 'arthur nery', 'zack tabudlo', 'cup of joe', 'juan karlos', 'dionela',
     'felip', 'josh cullen', 'bgyo', 'kaia', 'g22', 'dilaw', 'sunflower station', 'opm',
-    'p-pop', 'ppop', 'tagalog', 'filipino', 'pinoy', 'mayonnaise', 'kamikazee', 'parokya', 'eraserheads'
+    'p-pop', 'ppop', 'tagalog', 'filipino', 'pinoy', 'mayonnaise', 'kamikazee', 'parokya', 'eraserheads', 'mayari'
   ];
   if (ppop.some(a => c.includes(a))) return true;
 
@@ -1731,12 +1903,13 @@ function isFilipinoOrTagalog(text, artist, title) {
     'dito', 'doon', 'nandito', 'saan', 'kailan', 'kaylan', 'wala', 'meron', 'mayroon', 'liwanag',
     'dilim', 'hanggang', 'bawat', 'sandali', 'yakap', 'halik', 'mata', 'kamay', 'tinig', 'lungkot',
     'saya', 'ngiti', 'luha', 'ayaw', 'gusto', 'ibig', 'paalam', 'muli', 'kahapon', 'bukas', 'ngayon',
-    'sayo', 'sa\'yo', 'atin', 'amin', 'samin', 'sa\'min', 'inyo', 'sinabi', 'sasabihin', 'nagmamahal'
+    'sayo', 'sa\'yo', 'atin', 'amin', 'samin', 'sa\'min', 'inyo', 'sinabi', 'sasabihin', 'nagmamahal',
+    'awit', 'kanta', 'musika', 'sinta', 'giliw', 'himig', 'tibok', 'sigla', 'hawakan', 'daigdig'
   ];
   const words = c.split(/[\s,.\-!?"'()\[\]]+/);
   let hits = 0;
   for (const w of words) if (tagalogWords.includes(w)) hits++;
-  return hits >= 2;
+  return hits >= 1;
 }
 
 function isEnglishText(text) {
@@ -1751,42 +1924,53 @@ function isEnglishText(text) {
     'than', 'call', 'first', 'who', 'may', 'down', 'side', 'been', 'now', 'find', 'any', 'new',
     'part', 'take', 'get', 'place', 'made', 'live', 'where', 'after', 'back', 'little', 'only',
     'every', 'good', 'me', 'give', 'our', 'under', 'name', 'very', 'through', 'just', 'think',
-    'say', 'help', 'much', 'before', 'move', 'right', 'too', 'same', 'tell', 'want', 'play'
+    'say', 'help', 'much', 'before', 'move', 'right', 'too', 'same', 'tell', 'want', 'play',
+    'beneath', 'luminous', 'sky', 'stand', 'echoes', 'starlight', 'hands', 'crystals', 'whisper'
   ];
   const words = c.split(/[\s,.\-!?"'()\[\]]+/);
   let hits = 0;
   for (const w of words) if (englishWords.includes(w)) hits++;
-  return hits >= 4;
+  return hits >= 3;
 }
 
+// Translate lines to English using MyMemory with CORS support
 async function translateToEnglish(lines) {
-  const out = [];
-  const BATCH = 15;
-  for (let i = 0; i < lines.length; i += BATCH) {
-    const chunk = lines.slice(i, i + BATCH);
-    const joined = chunk.map(s => s.trim() || '.').join(' \n===\n ');
-    try {
-      const url = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=' + encodeURIComponent(joined);
-      const res = await fetch(url);
-      if (!res.ok) throw 0;
-      const data = await res.json();
-      const detected = data && data[2];
-      // If detected as English, Tagalog, or Filipino: return null so we NEVER change it!
-      if (detected === 'en' || detected === 'tl' || detected === 'fil') {
-        return null;
-      }
-      let full = '';
-      if (Array.isArray(data[0])) full = data[0].map(s => s[0]).join('');
-      const split = full.split(/\s*===\s*/);
-      for (let j = 0; j < chunk.length; j++) {
-        const tr = split[j] ? split[j].trim() : '';
-        out.push(tr && tr !== '.' ? tr : chunk[j]);
-      }
-    } catch (e) {
-      chunk.forEach(c => out.push(c));
-    }
+  const fullText = lines.join(' ');
+  if (isEnglishText(fullText) || isFilipinoOrTagalog(fullText)) {
+    return null;
   }
-  return out;
+
+  try {
+    const promises = lines.map(async line => {
+      if (!line || !line.trim() || line === '♪') return line;
+      const clean = line.replace(/^[♪\s]+|[♪\s]+$/g, '').trim();
+      if (!clean) return line;
+
+      try {
+        const url = 'https://api.mymemory.translated.net/get?q=' + encodeURIComponent(clean) + '&langpair=autodetect|en';
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.responseStatus === 200 && data.responseData && data.responseData.translatedText) {
+            const det = (data.responseData.detectedLanguage || '').toLowerCase();
+            if (det === 'en' || det === 'tl' || det === 'fil') return '__ORIG__';
+            return data.responseData.translatedText;
+          } else if (data.responseStatus === '403') {
+            return '__ORIG__';
+          }
+        }
+      } catch (err) {}
+      return line;
+    });
+
+    const results = await Promise.all(promises);
+    if (results.some(r => r === '__ORIG__')) {
+      return null; // English or Filipino detected
+    }
+    return results;
+  } catch (e) {
+    return null;
+  }
 }
 
 // Always show original lyrics first
@@ -1801,7 +1985,7 @@ function showLyrics(track) {
     $('lyrics-status').textContent = 'Play a song to see its lyrics';
     return;
   }
-  if (!track.lyrics) {
+  if (!track.lyrics || !track.lyrics.l || !track.lyrics.l.length) {
     $('lyrics-status').textContent = 'No lyrics saved for this song.';
     return;
   }
@@ -1864,30 +2048,47 @@ $('btn-translate').addEventListener('click', async () => {
     return;
   }
 
-  // If already translated
+  // If already translated, allow toggling back to original lyrics
   if (t.isTranslated) {
-    toast('Already translated to English');
+    if (t.origLyrics) {
+      t.lyrics = { ...t.origLyrics, l: [...t.origLyrics.l] };
+      t.isTranslated = false;
+      showLyrics(t);
+      toast('Showing original lyrics');
+    }
     return;
   }
 
   const allLines = t.lyrics.l.join(' ');
 
-  // 1. Check if Filipino / Tagalog / P-Pop
+  // 1. Check if Filipino / Tagalog / P-Pop: NEVER change it!
   if (isFilipinoOrTagalog(allLines, t.artist, t.title)) {
     toast('Filipino/Tagalog song — kept original');
     return;
   }
 
-  // 2. Check if English
+  // 2. Check if English: NEVER change it!
   if (isEnglishText(allLines)) {
     toast('Song is in English — kept original');
     return;
   }
 
+  // 3. Pre-cached English translation (e.g. demo track 2)
+  if (t.englishLyrics && t.englishLyrics.length === t.lyrics.l.length) {
+    t.origLyrics = { ...t.lyrics, l: [...t.lyrics.l] };
+    t.lyrics = { ...t.lyrics, l: [...t.englishLyrics] };
+    t.isTranslated = true;
+    showLyrics(t);
+    $('lyrics-status').textContent = (t.lyrics.sy ? 'Synced lyrics' : 'Lyrics') + ' · Translated to English';
+    toast('Lyrics translated to English');
+    return;
+  }
+
+  // 4. Translate foreign language to English
   $('lyrics-status').textContent = 'Translating to English…';
   try {
     const trLines = await translateToEnglish(t.lyrics.l);
-    if (trLines) {
+    if (trLines && trLines.length) {
       t.origLyrics = { ...t.lyrics, l: [...t.lyrics.l] };
       t.lyrics = { ...t.lyrics, l: trLines };
       t.isTranslated = true;
