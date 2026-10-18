@@ -6,7 +6,7 @@
 <title>Music Player</title>
 <style>
 :root{--bg:#0a0a0f;--tx:#f4f4f7;--mu:#9a9aa8;--ac:#7dd3fc;--hv:rgba(255,255,255,.1);--pb:#f4f4f7;--pf:#111}
-html,body{margin:0;height:100%;overflow:hidden;font:16px system-ui,sans-serif;color:var(--tx);background:var(--bg);user-select:none;-webkit-user-select:none}
+html,body{margin:0;height:100%;overflow:hidden;font:16px system-ui,sans-serif;color:var(--tx);background:var(--bg)}
 #app{height:100%;display:flex;flex-direction:column;gap:16px;padding:20px;justify-content:center;align-items:center}
 .card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:24px;width:100%;max-width:400px;text-align:center;box-sizing:border-box}
 h1{font-size:20px;margin:0 0 10px;word-break:break-all}
@@ -15,8 +15,9 @@ p{color:var(--mu);margin:0 0 20px;font-size:14px}
 .ib{background:var(--hv);border:1px solid rgba(255,255,255,0.2);color:var(--tx);padding:12px 20px;border-radius:99px;font-size:16px;cursor:pointer;font-weight:600}
 .ib:active{background:var(--ac);color:#000}
 .ib.pb{background:var(--ac);color:#000}
-.pill{display:block;width:100%;padding:14px;border-radius:12px;background:var(--ac);color:#000;font-weight:700;border:0;cursor:pointer;margin-top:10px;box-sizing:border-box}
-#debug{position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.8);color:#0ff;font-family:monospace;font-size:11px;padding:8px;border-radius:8px;max-height:80px;overflow:auto;pointer-events:none}
+.pill{display:block;width:100%;padding:14px;border-radius:12px;background:var(--ac);color:#000;font-weight:700;border:0;cursor:pointer;margin-top:10px;box-sizing:border-box;font-size:15px}
+.pill:active{opacity:0.85}
+#debug{position:fixed;bottom:10px;left:10px;right:10px;background:rgba(0,0,0,0.85);color:#0ff;font-family:monospace;font-size:11px;padding:8px;border-radius:8px;max-height:80px;overflow:auto}
 </style>
 </head>
 <body>
@@ -27,14 +28,13 @@ p{color:var(--mu);margin:0 0 20px;font-size:14px}
     <p id="sub">Tap a button or add music to test</p>
     
     <div class="ct">
-      <button class="ib" id="pv">Prev</button>
-      <button class="ib pb" id="pl">Play</button>
-      <button class="ib" id="nx">Next</button>
+      <button class="ib" id="pv" type="button">Prev</button>
+      <button class="ib pb" id="pl" type="button">Play</button>
+      <button class="ib" id="nx" type="button">Next</button>
     </div>
 
-    <label class="pill">＋ Select Music Files
-      <input id="fi" type="file" accept="audio/*" multiple style="display:none">
-    </label>
+    <button class="pill" id="btnPick" type="button">📁 Select Music Folder</button>
+    <input id="fi" type="file" accept="audio/*" multiple style="display:none">
   </div>
 </div>
 
@@ -56,15 +56,62 @@ const audio = new Audio();
 let playlist = [];
 let currentIndex = 0;
 
+// Access your native FolderPickerPlugin registered in MainActivity.java
+const hasCapacitor = typeof window.Capacitor !== 'undefined';
+const FolderPicker = hasCapacitor && window.Capacitor.Plugins ? window.Capacitor.Plugins.FolderPicker : null;
+
+log(hasCapacitor ? "Capacitor ready" : "Web browser mode");
+
+// 1. SELECT FOLDER / FILES BUTTON
+$('#btnPick').onclick = async () => {
+  if (FolderPicker) {
+    try {
+      log("Opening native Android folder picker...");
+      const res = await FolderPicker.pick();
+      log("Folder selected: " + res.uri);
+      
+      const scanRes = await FolderPicker.scan({ uri: res.uri });
+      if (scanRes && scanRes.files && scanRes.files.length > 0) {
+        playlist = scanRes.files;
+        log("Found " + playlist.length + " songs!");
+        currentIndex = 0;
+        playTrack(0);
+      } else {
+        log("No audio files found in selected folder.");
+      }
+    } catch (err) {
+      log("Folder pick error: " + (err.message || err));
+    }
+  } else {
+    // Fallback for regular web browsers
+    $('#fi').value = '';
+    $('#fi').click();
+  }
+};
+
+// Web file input fallback
+$('#fi').onchange = e => {
+  const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/') || /\.(mp3|wav|m4a|flac|ogg)$/i.test(f.name));
+  log("Files selected: " + files.length);
+  if (files.length > 0) {
+    playlist = files;
+    currentIndex = 0;
+    playTrack(0);
+  }
+};
+
+// 2. PLAY / PAUSE BUTTON
 $('#pl').onclick = () => {
-  log("Play clicked. Playlist length: " + playlist.length);
-  if(playlist.length === 0) {
-    log("Please add music files first!");
+  log("Play clicked. Songs in playlist: " + playlist.length);
+  if (playlist.length === 0) {
+    log("Please tap 'Select Music Folder' first!");
     return;
   }
-  if(audio.paused) {
-    audio.play().then(() => log("Playing...")).catch(e => log("Play err: "+e.message));
-    $('#pl').innerText = "Pause";
+  if (audio.paused) {
+    audio.play().then(() => {
+      log("Playing...");
+      $('#pl').innerText = "Pause";
+    }).catch(e => log("Play err: " + e.message));
   } else {
     audio.pause();
     $('#pl').innerText = "Play";
@@ -72,40 +119,58 @@ $('#pl').onclick = () => {
   }
 };
 
+// 3. NEXT BUTTON
 $('#nx').onclick = () => {
   log("Next clicked");
-  if(playlist.length === 0) return;
+  if (playlist.length === 0) return;
   currentIndex = (currentIndex + 1) % playlist.length;
   playTrack(currentIndex);
 };
 
+// 4. PREV BUTTON
 $('#pv').onclick = () => {
   log("Prev clicked");
-  if(playlist.length === 0) return;
+  if (playlist.length === 0) return;
   currentIndex = (currentIndex - 1 + playlist.length) % playlist.length;
   playTrack(currentIndex);
 };
 
-$('#fi').onchange = e => {
-  const files = Array.from(e.target.files);
-  log("Files selected: " + files.length);
-  if(files.length > 0) {
-    playlist = files;
-    currentIndex = 0;
+// 5. PLAY TRACK FUNCTION
+async function playTrack(i) {
+  const item = playlist[i];
+  if (!item) return;
+
+  log("Loading: " + item.name);
+  $('#title').innerText = item.name;
+  $('#sub').innerText = "Track " + (i + 1) + " of " + playlist.length;
+
+  try {
+    if (FolderPicker && item.uri) {
+      // Use your native cache() method to copy file to cache so HTML5 audio can play it
+      log("Caching track via native plugin...");
+      const cached = await FolderPicker.cache({ uri: item.uri, name: item.name });
+      const srcUrl = window.Capacitor.convertFileSrc(cached.path);
+      audio.src = srcUrl;
+    } else if (item instanceof File) {
+      audio.src = URL.createObjectURL(item);
+    }
+
+    audio.play().then(() => {
+      log("Now playing: " + item.name);
+      $('#pl').innerText = "Pause";
+    }).catch(e => log("Audio play err: " + e.message));
+  } catch (err) {
+    log("Load error: " + (err.message || err));
+  }
+}
+
+// Auto-advance to next track when song finishes
+audio.onended = () => {
+  if (playlist.length > 0) {
+    currentIndex = (currentIndex + 1) % playlist.length;
     playTrack(currentIndex);
   }
 };
-
-function playTrack(i) {
-  const file = playlist[i];
-  log("Loading: " + file.name);
-  $('#title').innerText = file.name;
-  audio.src = URL.createObjectURL(file);
-  audio.play().then(() => {
-    log("Now playing track " + (i+1));
-    $('#pl').innerText = "Pause";
-  }).catch(e => log("Audio load error: " + e.message));
-}
 </script>
 
 </body>
