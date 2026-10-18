@@ -28,6 +28,11 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Use the sparkle image as the app icon
+        run: |
+          pip install pillow
+          python make_icons.py
+
       - name: Build the APK
         working-directory: android
         run: |

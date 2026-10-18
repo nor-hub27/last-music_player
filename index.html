@@ -98,8 +98,8 @@ body[data-view="player"] .panel,body[data-view="player"] .mini,body:not([data-vi
 </section>
 <section class="panel">
 <div class="tabs"><button data-v="queue" class="on">Queue</button><button data-v="lyrics">Lyrics</button><small id="cnt"></small></div>
-<div id="qp"><ul id="list"></ul><div id="em">Add songs from your device<br>or drop them here</div>
-<div class="ac"><label class="pill pri">＋ Add songs<input id="fi" type="file" accept="audio/*,.mp3,.m4a,.flac,.ogg,.opus,.wav,.lrc,.txt" multiple hidden></label><button class="pill" id="clr">Clear</button></div></div>
+<div id="qp"><ul id="list"></ul><div id="em">Add songs or a whole folder<br>from your device, or drop them here<br><small>On a phone, open the folder in the picker and tap Select all.</small></div>
+<div class="ac"><label class="pill pri">＋ Add songs<input id="fi" type="file" accept="audio/*,.mp3,.m4a,.flac,.ogg,.opus,.wav,.lrc,.txt" multiple hidden></label><label class="pill pri">＋ Add folder<input id="fo" type="file" webkitdirectory multiple hidden></label><button class="pill" id="clr">Clear</button></div></div>
 <div id="lp"><p id="lyst"></p><div id="ly"></div>
 <div class="ac"><label class="pill pri">＋ Add .lrc files<input id="fl" type="file" accept=".lrc,.txt" multiple hidden></label></div></div>
 </section>
@@ -160,7 +160,7 @@ function sub(){const t=cur!=null&&T[cur];$("#sub").textContent=t?(t.artist?t.art
 function guess(n){const o=n;n=n.replace(/[\(\[][^\)\]]*[\)\]]/g," ").replace(/\b(official|video|audio|lyrics?|hd|hq|mv|music)\b/gi," ").replace(/\s+/g," ").replace(/^[\s\-_]+|[\s\-_]+$/g,"");const k=n.indexOf(" - ");return k>0?{artist:n.slice(0,k).trim(),title:n.slice(k+3).trim()}:{artist:"",title:n||o}}
 async function add(files){files=[...files];
 for(const f of files.filter(f=>/\.(lrc|txt)$/i.test(f.name)))lrc[base(f.name).toLowerCase()]=await f.text();
-for(const f of files.filter(f=>/\.(mp3|m4a|mp4|flac|ogg|opus|wav|webm|aac)$/i.test(f.name)||f.type.startsWith("audio/"))){if(T.some(t=>t.f.name==f.name&&t.f.size==f.size))continue;
+for(const f of files.filter(f=>/\.(mp3|m4a|mp4|flac|ogg|opus|wav|webm|aac)$/i.test(f.name)||f.type.startsWith("audio/")).sort((a,b)=>(a.webkitRelativePath||a.rel||a.name).localeCompare(b.webkitRelativePath||b.rel||b.name,undefined,{numeric:true}))){if(T.some(t=>t.f.name==f.name&&t.f.size==f.size))continue;
 const g=guess(base(f.name)),t={f,url:URL.createObjectURL(f),ext:f.name.split(".").pop().toUpperCase(),title:g.title,artist:g.artist};T.push(t);if(shuf)pool.add(T.length-1);tq.push(t)}
 T.forEach(t=>{const x=lrc[base(t.f.name).toLowerCase()];if(!t.ly&&x)t.ly=parseLy(x)});render();pump();if(cur==null)cover(T[0]);showLy()}
 async function pump(){if(busy)return;busy=1;while(tq.length){const t=tq.shift();try{const n=t.f.name,o=/\.mp3$/i.test(n)?await id3(t.f):/\.(m4a|mp4)$/i.test(n)?await mp4(t.f):{};
@@ -194,8 +194,9 @@ $("#sh").onclick=()=>{shuf=!shuf;st("mp.sh",shuf?1:0);rs();modes()};$("#rp").onc
 $("#pl").onclick=$("#mp").onclick=toggle;$("#nx").onclick=$("#mn").onclick=next;$("#pv").onclick=prev;$("#clr").onclick=clearAll;modes();
 function view(v){if(v=="player"&&W.matches)v="queue";document.body.dataset.view=v;document.querySelectorAll("[data-v]").forEach(b=>b.classList.toggle("on",b.dataset.v==v));if(v=="lyrics")requestAnimationFrame(()=>scrollLy(false))}
 document.querySelectorAll("[data-v]").forEach(b=>b.onclick=()=>view(b.dataset.v));W.onchange=()=>view(document.body.dataset.view);view(W.matches?"queue":"player");
-$("#fi").onchange=e=>{add(e.target.files);e.target.value=""};$("#fl").onchange=e=>{add(e.target.files);e.target.value=""};
-addEventListener("dragover",e=>e.preventDefault());addEventListener("drop",e=>{e.preventDefault();add(e.dataTransfer.files)});
+$("#fi").onchange=e=>{add(e.target.files);e.target.value=""};$("#fl").onchange=e=>{add(e.target.files);e.target.value=""};$("#fo").onchange=e=>{add(e.target.files);e.target.value=""};
+addEventListener("dragover",e=>e.preventDefault());async function walk(en,o){if(en.isFile){const f=await new Promise(r=>en.file(r));f.rel=en.fullPath;o.push(f)}else{const rd=en.createReader();let b;do{b=await new Promise(r=>rd.readEntries(r));for(const x of b)await walk(x,o)}while(b.length)}}
+addEventListener("drop",async e=>{e.preventDefault();const en=[...e.dataTransfer.items].map(i=>i.webkitGetAsEntry&&i.webkitGetAsEntry()).filter(Boolean),fs=[];if(en.some(x=>x.isDirectory)){for(const x of en)await walk(x,fs);add(fs)}else add(e.dataTransfer.files)});
 addEventListener("keydown",e=>{if(/INPUT|BUTTON/.test(e.target.tagName))return;if(e.code=="Space"){e.preventDefault();toggle()}else if(e.key=="ArrowRight")next();else if(e.key=="ArrowLeft")prev()});
 cover(null);render();showLy();
 </script></body></html>
