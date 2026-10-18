@@ -58,74 +58,82 @@ html, body {
   flex: 5;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  min-width: 0;
+  align-items: center;
+  max-width: 520px;
+  margin: 0 auto;
+  width: 100%;
 }
 
 .cover-wrapper {
+  width: min(340px, 60vmin);
+  height: min(340px, 60vmin);
+  margin-bottom: 24px;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  max-width: 420px;
-  aspect-ratio: 1 / 1;
-  margin-bottom: 14px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 35px rgba(125, 211, 252, 0.15);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .cover-img {
-  width: 92%;
-  height: 92%;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
-  border-radius: 20px;
-  box-shadow: 0 14px 60px rgba(0, 0, 0, 0.7);
-  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+  display: block;
+  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
 .cover-pop {
-  animation: coverPop 0.38s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: coverPop 0.35s cubic-bezier(0.2, 0.9, 0.3, 1.2);
 }
 
 @keyframes coverPop {
-  0% { transform: scale(0.95); }
-  100% { transform: scale(1.0); }
+  0% { transform: scale(0.92); opacity: 0.8; }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .track-title {
-  font-size: 20pt;
-  font-weight: 600;
+  font-size: clamp(16pt, 2.6vmin, 20pt);
+  font-weight: 700;
   text-align: center;
-  line-height: 1.25;
-  margin-bottom: 4px;
-  word-break: break-word;
-  max-width: 600px;
   width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 10px;
+  color: var(--fg);
+  letter-spacing: -0.3px;
 }
 
 .track-subtitle {
-  color: var(--muted);
   font-size: 10pt;
+  color: var(--muted);
   text-align: center;
-  margin-bottom: 14px;
+  margin-top: 6px;
+  margin-bottom: 24px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 10px;
 }
 
 /* Seek Slider Row */
 .slider-row {
-  width: 100%;
-  max-width: 600px;
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  width: 100%;
+  margin-bottom: 18px;
 }
 
 .time-label {
+  font-size: 8.5pt;
   color: var(--muted);
-  font-size: 9.5pt;
-  font-family: monospace;
-  width: 44px;
-  flex-shrink: 0;
+  min-width: 38px;
+  font-variant-numeric: tabular-nums;
 }
 
 .time-label.right {
@@ -134,7 +142,7 @@ html, body {
 
 .seek-track {
   flex: 1;
-  height: 24px;
+  height: 28px;
   display: flex;
   align-items: center;
   cursor: pointer;
@@ -144,39 +152,39 @@ html, body {
 .seek-groove {
   width: 100%;
   height: 5px;
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 3px;
   position: relative;
+  overflow: visible;
 }
 
 .seek-fill {
-  height: 100%;
-  background: var(--accent);
-  border-radius: 3px;
   position: absolute;
   left: 0;
   top: 0;
-  pointer-events: none;
+  height: 100%;
   width: 0%;
+  background: var(--accent);
+  border-radius: 3px;
+  pointer-events: none;
 }
 
 .seek-thumb {
   position: absolute;
   top: 50%;
   left: 0%;
-  transform: translate(-50%, -50%);
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
+  background: #ffffff;
   border-radius: 50%;
-  background: var(--fg);
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 8px rgba(125, 211, 252, 0.8);
   pointer-events: none;
-  transition: width 0.15s, height 0.15s, background 0.15s;
+  transition: transform 0.1s;
 }
 
 .seek-track:hover .seek-thumb {
-  width: 14px;
-  height: 14px;
-  background: var(--accent);
+  transform: translate(-50%, -50%) scale(1.25);
 }
 
 /* Controls Row */
@@ -184,33 +192,33 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 20px;
   width: 100%;
-  max-width: 600px;
+  margin-bottom: 20px;
 }
 
 .btn-icon {
   background: transparent;
   border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  color: var(--muted);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: var(--fg);
-  transition: background 0.15s, transform 0.12s;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  transition: all 0.15s ease;
   position: relative;
 }
 
 .btn-icon:hover {
+  color: var(--fg);
   background: var(--hover-bg);
 }
 
 .btn-icon:active {
-  transform: scale(0.88);
+  transform: scale(0.92);
 }
 
 .btn-icon.active {
@@ -227,44 +235,48 @@ html, body {
 }
 
 .btn-play {
-  background: var(--fg);
-  border: none;
+  width: 58px;
+  height: 58px;
   border-radius: 50%;
-  width: 72px;
-  height: 72px;
+  background: var(--accent);
+  color: #0a0a0f;
+  border: none;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  color: #111;
-  transition: background 0.15s, transform 0.12s;
+  box-shadow: 0 6px 20px rgba(125, 211, 252, 0.4);
+  transition: transform 0.15s, background 0.15s;
 }
 
 .btn-play:hover {
-  background: var(--accent);
+  transform: scale(1.06);
+  background: #93ddfd;
 }
 
 .btn-play:active {
-  transform: scale(0.92);
+  transform: scale(0.95);
 }
 
 /* Volume Row */
 .vol-box {
-  width: 100%;
-  max-width: 360px;
   display: flex;
   align-items: center;
   gap: 12px;
+  width: 75%;
+  max-width: 280px;
 }
 
 .vol-icon {
+  background: transparent;
+  border: none;
   color: var(--muted);
   cursor: pointer;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
-  border: none;
+  transition: color 0.15s;
 }
 
 .vol-icon:hover {
@@ -277,101 +289,108 @@ html, body {
   display: flex;
   align-items: center;
   cursor: pointer;
-  position: relative;
 }
 
 /* ================= RIGHT COLUMN: Queue & Lyrics Card ================= */
 .panel-card {
-  flex: 4;
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  border-radius: 24px;
-  padding: 18px 20px;
+  flex: 6;
   display: flex;
   flex-direction: column;
-  min-width: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 24px;
+  overflow: hidden;
   backdrop-filter: blur(16px);
-  position: relative;
+  -webkit-backdrop-filter: blur(16px);
+  min-height: 0;
 }
 
 .panel-head {
   display: flex;
-  align-items: baseline;
-  gap: 18px;
-  margin-bottom: 12px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: 10px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 12px;
 }
 
 .tab-btn {
   background: transparent;
   border: none;
   color: var(--muted);
-  font-size: 16pt;
+  font-size: 11pt;
   font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 12px;
   cursor: pointer;
-  padding: 2px 0;
-  transition: color 0.15s;
+  transition: all 0.15s;
 }
 
 .tab-btn:hover {
   color: var(--fg);
+  background: var(--hover-bg);
 }
 
 .tab-btn.active {
   color: var(--fg);
-  border-bottom: 2px solid var(--accent);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 .count-label {
+  margin-left: auto;
+  font-size: 9.5pt;
   color: var(--muted);
-  font-size: 10pt;
-  margin-left: 4px;
 }
 
 .tab-pane {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  min-height: 280px;
 }
 
-/* Queue List */
+/* Track List in Queue */
 .track-list {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 6px;
 }
 
 .track-item {
   display: flex;
   align-items: center;
-  padding: 8px 10px;
-  border-radius: 14px;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.15s;
-  gap: 14px;
-  height: 64px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
 }
 
 .track-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--hover-bg);
+  border-color: rgba(255, 255, 255, 0.06);
 }
 
 .track-item.selected {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(125, 211, 252, 0.12);
+  border-color: rgba(125, 211, 252, 0.3);
 }
 
 .track-thumb {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  object-fit: cover;
-  background: #25252f;
-  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 .track-thumb img {
@@ -709,7 +728,7 @@ html, body {
 <div id="toast"></div>
 
 <!-- Hidden inputs for adding files/folders reliably -->
-<input id="input-files" type="file" multiple accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a,.opus,.webm" style="display:none">
+<input id="input-files" type="file" multiple accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a,.opus,.aac,.webm,.mp4" style="display:none">
 <input id="input-folder" type="file" webkitdirectory multiple style="display:none">
 
 <script>
@@ -769,6 +788,7 @@ const demoTracks = [
     title: 'Starlight Resonance',
     artist: 'Astral Wave',
     url: createSynthesizedAudio(0),
+    art: null,
     lyrics: {
       sy: 1,
       t: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40],
@@ -793,6 +813,7 @@ const demoTracks = [
     title: 'Midnight Mirage',
     artist: 'Crystal Glow',
     url: createSynthesizedAudio(1),
+    art: null,
     lyrics: {
       sy: 1,
       t: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36],
@@ -816,6 +837,7 @@ const demoTracks = [
     title: 'Obsidian Echoes',
     artist: 'Spectral Pulse',
     url: createSynthesizedAudio(2),
+    art: null,
     lyrics: {
       sy: 1,
       t: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36],
@@ -883,6 +905,8 @@ function playTrack(idx, recordHist = true) {
   $('track-subtitle').textContent = track.artist ? `${track.artist} · Track ${safeIdx + 1} of ${playlist.length}` : `Track ${safeIdx + 1} of ${playlist.length}`;
 
   const cover = $('cover-img');
+  cover.src = track.art || '/cover.jpg';
+  cover.onerror = () => { cover.src = '/cover.jpg'; };
   cover.classList.remove('cover-pop');
   void cover.offsetWidth;
   cover.classList.add('cover-pop');
@@ -1041,7 +1065,7 @@ function renderQueue() {
 
     item.innerHTML = `
       <div class="track-thumb">
-        <img src="/cover.jpg" alt="">
+        <img src="${t.art || '/cover.jpg'}" alt="" onerror="this.src='/cover.jpg'">
       </div>
       <div class="track-info">
         <div class="track-name ${isSelected ? 'playing' : ''}">${t.title || t.name.replace(/\.[^/.]+$/, '')}</div>
@@ -1059,25 +1083,196 @@ function renderQueue() {
   });
 }
 
+// Extract embedded Cover Art (ID3v2 APIC / FLAC / M4A) and Lyrics (USLT)
+async function extractAudioMetadata(file) {
+  let art = null;
+  let lyrics = null;
+  let title = '';
+  let artist = '';
+
+  try {
+    const slice = file.slice(0, Math.min(file.size, 4 * 1024 * 1024));
+    const buf = await slice.arrayBuffer();
+    const bytes = new Uint8Array(buf);
+    const view = new DataView(buf);
+
+    // 1. ID3v2 (MP3)
+    if (bytes[0] === 0x49 && bytes[1] === 0x44 && bytes[2] === 0x33) {
+      const ver = bytes[3];
+      const tagSize = ((bytes[6] & 0x7f) << 21) | ((bytes[7] & 0x7f) << 14) | ((bytes[8] & 0x7f) << 7) | (bytes[9] & 0x7f);
+      const maxOff = Math.min(tagSize + 10, bytes.length);
+      let off = 10;
+      while (off < maxOff - 10) {
+        let id, fSize, hSize;
+        if (ver === 2) {
+          id = String.fromCharCode(bytes[off], bytes[off+1], bytes[off+2]);
+          fSize = (bytes[off+3] << 16) | (bytes[off+4] << 8) | bytes[off+5];
+          hSize = 6;
+        } else {
+          id = String.fromCharCode(bytes[off], bytes[off+1], bytes[off+2], bytes[off+3]);
+          fSize = ver === 4 
+            ? (((bytes[off+4] & 0x7f) << 21) | ((bytes[off+5] & 0x7f) << 14) | ((bytes[off+6] & 0x7f) << 7) | (bytes[off+7] & 0x7f))
+            : view.getUint32(off + 4);
+          hSize = 10;
+        }
+        if (fSize <= 0 || off + hSize + fSize > bytes.length) break;
+
+        const fData = bytes.subarray(off + hSize, off + hSize + fSize);
+
+        // APIC / PIC (Album Art)
+        if ((id === 'APIC' || id === 'PIC') && !art) {
+          try {
+            const enc = fData[0];
+            let pOff = 1;
+            let mime = 'image/jpeg';
+            if (id === 'APIC') {
+              let mEnd = pOff;
+              while (mEnd < fData.length && fData[mEnd] !== 0) mEnd++;
+              const mStr = String.fromCharCode(...fData.subarray(pOff, mEnd));
+              if (mStr.includes('png')) mime = 'image/png';
+              else if (mStr.includes('webp')) mime = 'image/webp';
+              pOff = mEnd + 1;
+            } else {
+              pOff = 4;
+            }
+            pOff++; // skip pic type
+            if (enc === 0 || enc === 3) {
+              while (pOff < fData.length && fData[pOff] !== 0) pOff++;
+              pOff++;
+            } else {
+              while (pOff < fData.length - 1 && !(fData[pOff] === 0 && fData[pOff+1] === 0)) pOff += 2;
+              pOff += 2;
+            }
+            if (pOff < fData.length) {
+              const imgBytes = fData.slice(pOff);
+              if (imgBytes[0] === 0x89 && imgBytes[1] === 0x50) mime = 'image/png';
+              else if (imgBytes[0] === 0xFF && imgBytes[1] === 0xD8) mime = 'image/jpeg';
+              art = URL.createObjectURL(new Blob([imgBytes], { type: mime }));
+            }
+          } catch(e) {}
+        }
+
+        // USLT / ULT (Embedded lyrics)
+        if ((id === 'USLT' || id === 'ULT') && !lyrics) {
+          try {
+            const enc = fData[0];
+            let lOff = 4;
+            if (enc === 0 || enc === 3) {
+              while (lOff < fData.length && fData[lOff] !== 0) lOff++;
+              lOff++;
+            } else {
+              while (lOff < fData.length - 1 && !(fData[lOff] === 0 && fData[lOff+1] === 0)) lOff += 2;
+              lOff += 2;
+            }
+            const lBytes = fData.subarray(lOff);
+            const dec = new TextDecoder(enc === 1 ? 'utf-16' : 'utf-8').decode(lBytes);
+            if (dec.trim()) lyrics = parseLrc(dec);
+          } catch(e) {}
+        }
+
+        // TIT2 / TT2 (Title)
+        if ((id === 'TIT2' || id === 'TT2') && !title) {
+          try {
+            const enc = fData[0];
+            title = new TextDecoder(enc === 1 ? 'utf-16' : 'utf-8').decode(fData.subarray(1)).replace(/\0/g, '').trim();
+          } catch(e) {}
+        }
+
+        // TPE1 / TP1 (Artist)
+        if ((id === 'TPE1' || id === 'TP1') && !artist) {
+          try {
+            const enc = fData[0];
+            artist = new TextDecoder(enc === 1 ? 'utf-16' : 'utf-8').decode(fData.subarray(1)).replace(/\0/g, '').trim();
+          } catch(e) {}
+        }
+
+        off += hSize + fSize;
+      }
+    }
+    // 2. FLAC
+    else if (bytes[0] === 0x66 && bytes[1] === 0x4c && bytes[2] === 0x61 && bytes[3] === 0x43) {
+      let fOff = 4;
+      while (fOff < bytes.length - 4) {
+        const isLast = (bytes[fOff] & 0x80) !== 0;
+        const bType = bytes[fOff] & 0x7f;
+        const bSize = (bytes[fOff+1] << 16) | (bytes[fOff+2] << 8) | bytes[fOff+3];
+        fOff += 4;
+        if (bType === 6 && !art) {
+          const mimeLen = view.getUint32(fOff + 4);
+          const descLen = view.getUint32(fOff + 8 + mimeLen);
+          const dOff = fOff + 8 + mimeLen + 4 + descLen + 16;
+          const dLen = view.getUint32(dOff);
+          const imgBytes = bytes.slice(dOff + 4, dOff + 4 + dLen);
+          art = URL.createObjectURL(new Blob([imgBytes], { type: 'image/jpeg' }));
+        }
+        fOff += bSize;
+        if (isLast) break;
+      }
+    }
+    // 3. M4A / MP4 ('covr' atom)
+    if (!art && (file.name.match(/\.(m4a|mp4|aac)$/i) || (bytes.length > 8 && bytes[4] === 0x66 && bytes[5] === 0x74 && bytes[6] === 0x79 && bytes[7] === 0x70))) {
+      for (let i = 0; i < bytes.length - 16; i++) {
+        if (bytes[i] === 0x63 && bytes[i+1] === 0x6f && bytes[i+2] === 0x76 && bytes[i+3] === 0x72) { // 'covr'
+          for (let j = i + 4; j < Math.min(i + 32, bytes.length - 12); j++) {
+            if (bytes[j] === 0x64 && bytes[j+1] === 0x61 && bytes[j+2] === 0x74 && bytes[j+3] === 0x61) { // 'data'
+              const dataLen = view.getUint32(j - 4);
+              const dataType = view.getUint32(j + 4);
+              const mime = dataType === 14 ? 'image/png' : 'image/jpeg';
+              const imgBytes = bytes.slice(j + 12, j - 4 + dataLen);
+              if (imgBytes.length > 0) {
+                art = URL.createObjectURL(new Blob([imgBytes], { type: mime }));
+              }
+              break;
+            }
+          }
+          if (art) break;
+        }
+      }
+    }
+  } catch(e) {}
+
+  return { art, lyrics, title, artist };
+}
+
 // Add Local Audio Files
-function addFiles(files) {
-  const valid = Array.from(files).filter(f =>
-    f.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|opus|aac|webm)$/i.test(f.name)
+async function addFiles(files) {
+  const fileArr = Array.from(files);
+  const lrcFiles = fileArr.filter(f => /\.(lrc|txt)$/i.test(f.name));
+  const lrcMap = {};
+  for (const lf of lrcFiles) {
+    try {
+      const text = await lf.text();
+      const base = lf.name.replace(/\.[^/.]+$/, '').toLowerCase();
+      lrcMap[base] = text;
+    } catch(e) {}
+  }
+
+  const valid = fileArr.filter(f =>
+    f.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|opus|aac|webm|mp4)$/i.test(f.name)
   );
   if (!valid.length) return;
 
-  const newTracks = valid.map((f, idx) => {
+  const newTracks = await Promise.all(valid.map(async (f, idx) => {
     const clean = f.name.replace(/\.[^/.]+$/, '');
     const parts = clean.split(' - ');
+    const meta = await extractAudioMetadata(f);
+
+    let lyr = meta.lyrics;
+    const baseKey = clean.toLowerCase();
+    if (!lyr && lrcMap[baseKey]) {
+      lyr = parseLrc(lrcMap[baseKey]);
+    }
+
     return {
       id: `local-${Date.now()}-${idx}`,
       name: f.name,
-      title: parts.length > 1 ? parts[1].trim() : clean,
-      artist: parts.length > 1 ? parts[0].trim() : '',
+      title: meta.title || (parts.length > 1 ? parts[1].trim() : clean),
+      artist: meta.artist || (parts.length > 1 ? parts[0].trim() : ''),
       url: URL.createObjectURL(f),
-      lyrics: null
+      art: meta.art || null,
+      lyrics: lyr || null
     };
-  });
+  }));
 
   const startIdx = playlist.length;
   playlist = [...playlist, ...newTracks];
@@ -1096,8 +1291,17 @@ $('input-files').addEventListener('change', e => {
 });
 
 $('btn-add-folder').addEventListener('click', () => {
-  $('input-folder').value = '';
-  $('input-folder').click();
+  if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FolderPicker) {
+    window.Capacitor.Plugins.FolderPicker.pick().then(res => {
+      if (res && res.files) addFiles(res.files);
+    }).catch(() => {
+      $('input-folder').value = '';
+      $('input-folder').click();
+    });
+  } else {
+    $('input-folder').value = '';
+    $('input-folder').click();
+  }
 });
 
 $('input-folder').addEventListener('change', e => {
@@ -1112,6 +1316,7 @@ $('btn-remove').addEventListener('click', () => {
     audio.src = '';
     $('track-title').textContent = 'No Song Loaded';
     $('track-subtitle').textContent = 'Add songs to get started';
+    $('cover-img').src = '/cover.jpg';
     updatePlayIcon(false);
     renderQueue();
   } else {
@@ -1128,6 +1333,7 @@ $('btn-clear').addEventListener('click', () => {
   currentLyrics = null;
   $('track-title').textContent = 'No Song Loaded';
   $('track-subtitle').textContent = 'Queue cleared';
+  $('cover-img').src = '/cover.jpg';
   updatePlayIcon(false);
   renderQueue();
   showLyrics(null);
@@ -1249,6 +1455,7 @@ function showLyrics(track) {
   const tr = $('ly-track');
   tr.innerHTML = '';
   tr.style.transform = 'translateY(0px)';
+  currentLyrics = track && track.lyrics ? track.lyrics : null;
   currentLyricIdx = -1;
 
   if (!track) {
@@ -1327,26 +1534,50 @@ $('btn-find-online').addEventListener('click', async () => {
     return;
   }
   $('lyrics-status').textContent = 'Searching online…';
-  try {
-    const q = `${t.artist || ''} ${t.title || t.name}`.replace(/\.[^/.]+$/, '').trim();
-    const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
-    if (!res.ok) throw 0;
-    const data = await res.json();
-    if (Array.isArray(data) && data.length) {
-      const best = data.find(r => r.syncedLyrics || r.plainLyrics) || data[0];
-      const raw = best.syncedLyrics || best.plainLyrics;
-      if (raw) {
-        t.lyrics = parseLrc(raw);
-        t.trTested = false;
-        showLyrics(t);
-        $('lyrics-status').textContent += ' · from lrclib.net';
-        toast('Lyrics found online');
-        return;
+
+  const cleanTitle = (t.title || t.name)
+    .replace(/\.[^/.]+$/, '')
+    .replace(/[\(\[][^\)\]]*[\)\]]/g, ' ')
+    .replace(/\b(official|video|audio|lyrics?|hd|hq|mv|music|remix|edit)\b/gi, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const cleanArtist = (t.artist || '').trim();
+
+  const queries = [
+    cleanArtist ? `${cleanArtist} ${cleanTitle}` : cleanTitle,
+    cleanTitle
+  ];
+
+  let foundLyrics = null;
+  for (const q of queries) {
+    if (!q) continue;
+    try {
+      const res = await fetch(`https://lrclib.net/api/search?q=${encodeURIComponent(q)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length) {
+          const best = data.find(r => r.syncedLyrics || r.plainLyrics) || data[0];
+          const raw = best.syncedLyrics || best.plainLyrics;
+          if (raw) {
+            foundLyrics = parseLrc(raw);
+            break;
+          }
+        }
       }
-    }
+    } catch (e) {}
+  }
+
+  if (foundLyrics && foundLyrics.l.length) {
+    t.lyrics = foundLyrics;
+    currentLyrics = foundLyrics;
+    currentLyricIdx = -1;
+    t.trTested = false;
+    showLyrics(t);
+    $('lyrics-status').textContent = (foundLyrics.sy ? 'Synced lyrics' : 'Lyrics') + ' · from lrclib.net';
+    toast('Lyrics found online');
+  } else {
     $('lyrics-status').textContent = 'No lyrics found online';
-  } catch (e) {
-    $('lyrics-status').textContent = 'Could not reach lyrics service';
+    toast('No lyrics found online');
   }
 });
 
@@ -1354,9 +1585,8 @@ function parseLrc(text) {
   const lines = [];
   const times = [];
   let synced = false;
-  const re = /\[(\d{1,3}):(\d{1,2}(?:\.\d{1,3})?)\]/g;
   for (const raw of text.split(/\r?\n/)) {
-    const m = re.exec(raw);
+    const m = raw.match(/\[(\d{1,3}):(\d{1,2}(?:\.\d{1,3})?)\]/);
     if (m) {
       synced = true;
       times.push(parseInt(m[1], 10) * 60 + parseFloat(m[2]));
