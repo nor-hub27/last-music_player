@@ -28,10 +28,12 @@ jobs:
           npx cap add android
           npx cap sync android
 
-      - name: Use the sparkle image as the app icon
+      - name: Add the folder picker and the app icon
         run: |
+          cp native/*.java android/app/src/main/java/com/musicplayer/app/
           pip install pillow
           python make_icons.py
+          find android/app/src/main/res -name "ic_launcher*" | sort
 
       - name: Build the APK
         working-directory: android
