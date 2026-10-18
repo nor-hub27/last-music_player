@@ -728,8 +728,8 @@ html, body {
 <div id="toast"></div>
 
 <!-- Hidden inputs for adding files/folders reliably -->
-<input id="input-files" type="file" multiple accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a,.opus,.aac,.webm,.mp4" style="display:none">
-<input id="input-folder" type="file" webkitdirectory multiple style="display:none">
+<input id="input-files" type="file" multiple accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a,.opus,.aac,.webm,.mp4,.lrc,.txt" style="display:none">
+<input id="input-folder" type="file" webkitdirectory directory mozdirectory multiple accept="audio/*,.mp3,.wav,.ogg,.flac,.m4a,.opus,.aac,.webm,.mp4,.lrc,.txt" style="display:none">
 
 <script>
 // ================= SOUND & SYNTH ENGINE (Audible offline tracks) =================
@@ -1091,7 +1091,8 @@ async function extractAudioMetadata(file) {
   let artist = '';
 
   try {
-    const slice = file.slice(0, Math.min(file.size, 4 * 1024 * 1024));
+    if (!file || typeof file.slice !== 'function') return { art, lyrics, title, artist };
+    const slice = file.slice(0, Math.min(file.size || 0, 4 * 1024 * 1024));
     const buf = await slice.arrayBuffer();
     const bytes = new Uint8Array(buf);
     const view = new DataView(buf);
@@ -1236,43 +1237,84 @@ async function extractAudioMetadata(file) {
 
 // Add Local Audio Files
 async function addFiles(files) {
+  if (!files) return;
   const fileArr = Array.from(files);
-  const lrcFiles = fileArr.filter(f => /\.(lrc|txt)$/i.test(f.name));
+  if (!fileArr.length) return;
+
+  const lrcFiles = fileArr.filter(f => f && f.name && /\.(lrc|txt)$/i.test(f.name));
   const lrcMap = {};
   for (const lf of lrcFiles) {
     try {
-      const text = await lf.text();
-      const base = lf.name.replace(/\.[^/.]+$/, '').toLowerCase();
-      lrcMap[base] = text;
+      if (typeof lf.text === 'function') {
+        const text = await lf.text();
+        const base = lf.name.replace(/\.[^/.]+$/, '').toLowerCase();
+        lrcMap[base] = text;
+      }
     } catch(e) {}
   }
 
-  const valid = fileArr.filter(f =>
-    f.type.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|opus|aac|webm|mp4)$/i.test(f.name)
-  );
-  if (!valid.length) return;
+  const valid = fileArr.filter(f => {
+    if (!f) return false;
+    const fType = f.type && typeof f.type === 'string' ? f.type : '';
+    const fName = f.name && typeof f.name === 'string' ? f.name : '';
+    return fType.startsWith('audio/') || /\.(mp3|wav|ogg|flac|m4a|opus|aac|webm|mp4)$/i.test(fName);
+  });
 
-  const newTracks = await Promise.all(valid.map(async (f, idx) => {
-    const clean = f.name.replace(/\.[^/.]+$/, '');
-    const parts = clean.split(' - ');
-    const meta = await extractAudioMetadata(f);
+  if (!valid.length) {
+    toast('No supported audio files found');
+    return;
+  }
 
-    let lyr = meta.lyrics;
-    const baseKey = clean.toLowerCase();
-    if (!lyr && lrcMap[baseKey]) {
-      lyr = parseLrc(lrcMap[baseKey]);
+  toast(`Loading ${valid.length} audio file${valid.length === 1 ? '' : 's'}…`);
+
+  const newTracks = [];
+  for (let idx = 0; idx < valid.length; idx++) {
+    const f = valid[idx];
+    try {
+      const fName = f.name || `Track ${idx + 1}`;
+      const clean = fName.replace(/\.[^/.]+$/, '');
+      const parts = clean.split(' - ');
+
+      let meta = { art: null, lyrics: null, title: '', artist: '' };
+      try {
+        meta = await extractAudioMetadata(f);
+      } catch(e) {}
+
+      let lyr = meta.lyrics;
+      const baseKey = clean.toLowerCase();
+      if (!lyr && lrcMap[baseKey]) {
+        try {
+          lyr = parseLrc(lrcMap[baseKey]);
+        } catch(e) {}
+      }
+
+      let url = '';
+      if (f instanceof Blob || f instanceof File) {
+        url = URL.createObjectURL(f);
+      } else if (f.url) {
+        url = f.url;
+      }
+
+      if (url) {
+        newTracks.push({
+          id: `local-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
+          name: fName,
+          title: meta.title || (parts.length > 1 ? parts[1].trim() : clean),
+          artist: meta.artist || (parts.length > 1 ? parts[0].trim() : ''),
+          url: url,
+          art: meta.art || null,
+          lyrics: lyr || null
+        });
+      }
+    } catch(err) {
+      console.warn('Skipping unreadable track:', err);
     }
+  }
 
-    return {
-      id: `local-${Date.now()}-${idx}`,
-      name: f.name,
-      title: meta.title || (parts.length > 1 ? parts[1].trim() : clean),
-      artist: meta.artist || (parts.length > 1 ? parts[0].trim() : ''),
-      url: URL.createObjectURL(f),
-      art: meta.art || null,
-      lyrics: lyr || null
-    };
-  }));
+  if (!newTracks.length) {
+    toast('Could not read audio files');
+    return;
+  }
 
   const startIdx = playlist.length;
   playlist = [...playlist, ...newTracks];
@@ -1281,31 +1323,127 @@ async function addFiles(files) {
   toast(`Added ${newTracks.length} song${newTracks.length === 1 ? '' : 's'}`);
 }
 
+async function handleCapacitorFiles(capFiles) {
+  const plugin = window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FolderPicker;
+  if (!plugin || !capFiles || !capFiles.length) return;
+  toast('Loading tracks from folder…');
+
+  const audioItems = capFiles.filter(f => f && f.name && /\.(mp3|wav|ogg|flac|m4a|opus|aac|webm|mp4)$/i.test(f.name));
+  if (!audioItems.length) {
+    toast('No audio files found in folder');
+    return;
+  }
+
+  const startIdx = playlist.length;
+  let addedCount = 0;
+
+  for (const item of audioItems) {
+    try {
+      const cached = await plugin.cache({ uri: item.uri, name: item.name });
+      if (cached && cached.path) {
+        const playUrl = window.Capacitor.convertFileSrc(cached.path);
+        const clean = item.name.replace(/\.[^/.]+$/, '');
+        const parts = clean.split(' - ');
+        playlist.push({
+          id: `cap-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          name: item.name,
+          title: parts.length > 1 ? parts[1].trim() : clean,
+          artist: parts.length > 1 ? parts[0].trim() : '',
+          url: playUrl,
+          art: null,
+          lyrics: null
+        });
+        addedCount++;
+        renderQueue();
+      }
+    } catch(e) {
+      console.warn('Failed to cache track:', item.name, e);
+    }
+  }
+
+  if (addedCount > 0) {
+    renderQueue();
+    playTrack(startIdx);
+    toast(`Added ${addedCount} song${addedCount === 1 ? '' : 's'}`);
+  } else {
+    toast('Could not load songs from folder');
+  }
+}
+
 $('btn-add-files').addEventListener('click', () => {
-  $('input-files').value = '';
-  $('input-files').click();
+  const fileInp = $('input-files');
+  if (fileInp) {
+    fileInp.value = '';
+    fileInp.click();
+  }
 });
 
 $('input-files').addEventListener('change', e => {
-  if (e.target.files) addFiles(e.target.files);
+  if (e.target.files && e.target.files.length) {
+    addFiles(e.target.files);
+  }
 });
 
-$('btn-add-folder').addEventListener('click', () => {
+$('btn-add-folder').addEventListener('click', async () => {
+  // 1. Capacitor native FolderPicker if inside Android app
   if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.FolderPicker) {
-    window.Capacitor.Plugins.FolderPicker.pick().then(res => {
-      if (res && res.files) addFiles(res.files);
-    }).catch(() => {
-      $('input-folder').value = '';
-      $('input-folder').click();
-    });
-  } else {
-    $('input-folder').value = '';
-    $('input-folder').click();
+    try {
+      const res = await window.Capacitor.Plugins.FolderPicker.pick();
+      if (res && res.files && res.files.length) {
+        await handleCapacitorFiles(res.files);
+        return;
+      }
+    } catch(e) {
+      console.warn('FolderPicker fallback to input', e);
+    }
+  }
+
+  // 2. Modern File System Access API (Chrome/Edge desktop) if supported & not restricted by iframe
+  if (typeof window.showDirectoryPicker === 'function' && window.self === window.top) {
+    try {
+      const dirHandle = await window.showDirectoryPicker({ id: 'music_folder', mode: 'read' });
+      const collectedFiles = [];
+      async function scanDirectory(dir) {
+        for await (const entry of dir.values()) {
+          if (entry.kind === 'file') {
+            try {
+              const file = await entry.getFile();
+              collectedFiles.push(file);
+            } catch(e) {}
+          } else if (entry.kind === 'directory') {
+            try {
+              await scanDirectory(entry);
+            } catch(e) {}
+          }
+        }
+      }
+      toast('Scanning folder…');
+      await scanDirectory(dirHandle);
+      if (collectedFiles.length > 0) {
+        await addFiles(collectedFiles);
+        return;
+      } else {
+        toast('No audio files found in folder');
+        return;
+      }
+    } catch(err) {
+      if (err.name === 'AbortError') return;
+      // Other error (e.g. security/iframe), fall through to input
+    }
+  }
+
+  // 3. Fallback to HTML5 directory input (works across all standard browsers)
+  const folderInp = $('input-folder');
+  if (folderInp) {
+    folderInp.value = '';
+    folderInp.click();
   }
 });
 
 $('input-folder').addEventListener('change', e => {
-  if (e.target.files) addFiles(e.target.files);
+  if (e.target.files && e.target.files.length) {
+    addFiles(e.target.files);
+  }
 });
 
 $('btn-remove').addEventListener('click', () => {
@@ -1340,11 +1478,48 @@ $('btn-clear').addEventListener('click', () => {
   toast('Queue cleared');
 });
 
-// Drag & drop support
+// Drag & drop support for both files and folders
 window.addEventListener('dragover', e => e.preventDefault());
-window.addEventListener('drop', e => {
+window.addEventListener('drop', async e => {
   e.preventDefault();
-  if (e.dataTransfer.files) addFiles(e.dataTransfer.files);
+  const items = e.dataTransfer.items;
+  if (items && items.length) {
+    const files = [];
+    async function traverseEntry(entry) {
+      if (entry.isFile) {
+        try {
+          const file = await new Promise((res, rej) => entry.file(res, rej));
+          files.push(file);
+        } catch(e) {}
+      } else if (entry.isDirectory) {
+        const reader = entry.createReader();
+        const readEntries = async () => {
+          const batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+          if (batch && batch.length) {
+            for (const child of batch) await traverseEntry(child);
+            await readEntries();
+          }
+        };
+        await readEntries();
+      }
+    }
+    for (let i = 0; i < items.length; i++) {
+      const entry = items[i].webkitGetAsEntry ? items[i].webkitGetAsEntry() : null;
+      if (entry) {
+        await traverseEntry(entry);
+      } else {
+        const f = items[i].getAsFile();
+        if (f) files.push(f);
+      }
+    }
+    if (files.length) {
+      addFiles(files);
+      return;
+    }
+  }
+  if (e.dataTransfer.files && e.dataTransfer.files.length) {
+    addFiles(e.dataTransfer.files);
+  }
 });
 
 // ================= TABS SWITCHING =================
