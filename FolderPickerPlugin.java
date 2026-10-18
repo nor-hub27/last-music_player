@@ -23,7 +23,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Locale;
 
-/** Lets the web page pick a folder, list the songs in it, read parts of them and play them. */
 @CapacitorPlugin(name = "FolderPicker")
 public class FolderPickerPlugin extends Plugin {
 
@@ -47,9 +46,7 @@ public class FolderPickerPlugin extends Plugin {
         Uri tree = data.getData();
         try {
             getContext().getContentResolver().takePersistableUriPermission(tree, Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } catch (Exception ignored) {
-            // the folder still works for this session
-        }
+        } catch (Exception ignored) {}
         respond(call, tree);
     }
 
@@ -90,18 +87,14 @@ public class FolderPickerPlugin extends Plugin {
                 DocumentsContract.Document.COLUMN_SIZE
         };
         Cursor c = getContext().getContentResolver().query(children, cols, null, null, null);
-        if (c == null) {
-            return;
-        }
+        if (c == null) return;
         try {
             while (c.moveToNext()) {
                 String id = c.getString(0);
                 String name = c.getString(1);
                 String mime = c.getString(2);
                 long size = c.getLong(3);
-                if (name == null) {
-                    continue;
-                }
+                if (name == null) continue;
                 if (DocumentsContract.Document.MIME_TYPE_DIR.equals(mime)) {
                     walk(tree, id, rel + name + "/", out);
                 } else {
@@ -142,18 +135,14 @@ public class FolderPickerPlugin extends Plugin {
             long skipped = 0;
             while (skipped < offset) {
                 long n = in.skip(offset - skipped);
-                if (n <= 0) {
-                    break;
-                }
+                if (n <= 0) break;
                 skipped += n;
             }
             byte[] buf = new byte[length];
             int got = 0;
             while (got < length) {
                 int n = in.read(buf, got, length - got);
-                if (n < 0) {
-                    break;
-                }
+                if (n < 0) break;
                 got += n;
             }
             out.put("data", Base64.encodeToString(buf, 0, got, Base64.NO_WRAP));
@@ -161,13 +150,7 @@ public class FolderPickerPlugin extends Plugin {
         } catch (Exception e) {
             call.reject("read failed: " + e.getMessage());
         } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (Exception ignored) {
-                // nothing to do
-            }
+            try { if (in != null) in.close(); } catch (Exception ignored) {}
         }
     }
 
@@ -199,15 +182,9 @@ public class FolderPickerPlugin extends Plugin {
             call.reject("copy failed: " + e.getMessage());
         } finally {
             try {
-                if (in != null) {
-                    in.close();
-                }
-                if (os != null) {
-                    os.close();
-                }
-            } catch (Exception ignored) {
-                // nothing to do
-            }
+                if (in != null) in.close();
+                if (os != null) os.close();
+            } catch (Exception ignored) {}
         }
     }
 
